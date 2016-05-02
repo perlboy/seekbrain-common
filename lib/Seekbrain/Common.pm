@@ -4,6 +4,10 @@ use 5.006;
 use strict;
 use warnings;
 
+use Seekbrain::Common::Log;
+use Seekbrain::Common::CommandLine;
+use JSON::MaybeXS qw(decode_json);
+
 =head1 NAME
 
 Seekbrain::Common - The great new Seekbrain::Common!
@@ -15,7 +19,9 @@ Version 0.01
 =cut
 
 our $VERSION = '0.01';
-
+my $logger;
+my $config;
+my $commandLine;
 
 =head1 SYNOPSIS
 
@@ -35,18 +41,75 @@ if you don't export anything, such as for a purely object-oriented module.
 
 =head1 SUBROUTINES/METHODS
 
-=head2 function1
+=head2 new
+
+Constructor method, accepts a baseline yaml config
 
 =cut
+sub new {
+	my $c = shift;
+	my $inputParams = shift;
+	
+	###
+	# Process command line
+	###
+	if($inputParams->{commandLine}) {
+		my @commandLineArguments = ('c|config=s');
+		if($inputParams->{commandLineAdditions}) {
+			push(@commandLineArguments, $inputParams->{commandLineAdditions});
+		}
+		
+		$commandLine = new Seekbrain::Common::CommandLine($inputParams->{commandLine}, @commandLineArguments);
+	} else {
+		$commandLine = new Seekbrain::Common::CommandLine("-c etc/config.json", ('c|config=s'));
+	}
+	
+	###
+	# Load config
+	###
+	local $/; #Enable 'slurp' mode
+	open(my $configData, "<", $commandLine->get('c')) || die "Unable to open input config file of: " . $commandLine->get('c');
+	my $rawJson = <$configData>;
+	close($rawJson);
+	
+	$config = decode_json($rawJson);
 
-sub function1 {
+	# Return blessed object
+	return bless {}, $c;
 }
 
-=head2 function2
+=head2 log
+
+Log utility wrapper
+=cut
+sub log {
+	my $self = shift;
+	if(!$logger) {
+		$logger = new Seekbrain::Common::Log($self->config->{'logger'}->{'config'}, $self->config->{'logger'}->{'service'});
+	}
+	
+	return $logger;
+}
+
+=head2 cmd
+
+Command Line
+
+=cut
+sub cmd {
+	my $self = shift;
+	return $commandLine;
+}
+
+=head2 config
+
+Config Wrapper
 
 =cut
 
-sub function2 {
+sub config {
+	my $self = shift;
+	return $config;
 }
 
 =head1 AUTHOR

@@ -30,6 +30,8 @@ build_requires (
 );
 
 requires (
+   'Log::Log4perl'		=> 0,
+   'Getopt::Long'		=> 0
    #'ABC'              => 1.6,
    #'Foo::Bar::Module' => 5.0401,
 );

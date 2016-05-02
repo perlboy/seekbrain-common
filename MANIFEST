@@ -1,6 +1,9 @@
+.includepath
 .project
 Changes
 lib/Seekbrain/Common.pm
+lib/Seekbrain/Common/CommandLine.pm
+lib/Seekbrain/Common/Log.pm
 MANIFEST			This list of files
 MANIFEST.SKIP
 README
